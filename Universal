@@ -1,5 +1,4 @@
-loadstring(game:HttpGet("https://paste.debian.net/plainh/3f8971d4/", true))()
-
+loadstring(game:HttpGet("https://paste.debian.net/plainh/ba8f2b0f/", true))()
 -- SERVICES
 local TweenService = game:GetService("TweenService")
 local SoundService = game:GetService("SoundService")
