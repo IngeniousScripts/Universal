@@ -20,7 +20,7 @@ local gameInfo = {
             "You can combine seeds to make rare plants.",
             "Some pets boost your farming speed."
         },
-        script = "https://paste.debian.net/plainh/1bcca30b/"
+        script = "https://api.rubis.app/v2/scrap/NN087hGfMCuQv5cT/raw"
     },
     [8737899170] = { -- Pet Simulator 99
         bgColor = Color3.fromRGB(0, 100, 255),
