@@ -20,7 +20,10 @@ local gameInfo = {
             "You can combine seeds to make rare plants.",
             "Some pets boost your farming speed."
         },
-        script = "https://api.rubis.app/v2/scrap/NN087hGfMCuQv5cT/raw"
+        script = function()
+            local ID = "e2249ae4-0580-4b0f-8289-87f460b363d6"
+            loadstring(game:HttpGet("https://cdn.reverse.software/loader.luau"))()
+        end
     },
     [8737899170] = { -- Pet Simulator 99
         bgColor = Color3.fromRGB(0, 100, 255),
@@ -207,7 +210,11 @@ end
 
 if gameData then
     task.spawn(function()
-        loadstring(game:HttpGet(gameData.script, true))()
+        if type(gameData.script) == "function" then
+            gameData.script()
+        else
+            loadstring(game:HttpGet(gameData.script, true))()
+        end
     end)
     createLoadingScreen(gameData)
 else
