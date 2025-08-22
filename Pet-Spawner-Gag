@@ -1,0 +1,299 @@
+--// Ingenious Spawner UI (Updated with Black, Transparent GUI, and New Key)
+local Spawner = loadstring(game:HttpGet("https://raw.githubusercontent.com/iwantsom3/script/refs/heads/main/Niggggfd.lua"))()
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+
+-- ScreenGui
+local gui = Instance.new("ScreenGui")
+gui.Name = "IngeniousSpawner"
+gui.ResetOnSpawn = false
+gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+
+-- Function to add UICorner
+local function addCorner(instance, radius)
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, radius or 8)
+    corner.Parent = instance
+end
+
+-- Function to add UIStroke
+local function addStroke(instance, color, thickness)
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = color or Color3.fromRGB(255, 255, 255)
+    stroke.Thickness = thickness or 1
+    stroke.Transparency = 0.5
+    stroke.Parent = instance
+end
+
+-- Key Frame
+local keyFrame = Instance.new("Frame")
+keyFrame.Size = UDim2.new(0, 240, 0, 140)
+keyFrame.Position = UDim2.new(0.5, -120, 0.5, -70)
+keyFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- Black
+keyFrame.BackgroundTransparency = 0.3 -- Slightly transparent
+keyFrame.Active = true
+keyFrame.Draggable = true
+keyFrame.Parent = gui
+addCorner(keyFrame)
+addStroke(keyFrame, Color3.fromRGB(255, 255, 255))
+
+local keyTitle = Instance.new("TextLabel")
+keyTitle.Size = UDim2.new(1, 0, 0, 30)
+keyTitle.BackgroundColor3 = Color3.fromRGB(20, 20, 20) -- Darker black for contrast
+keyTitle.BackgroundTransparency = 0.3
+keyTitle.Text = "🔑 Ingenious 🗝️"
+keyTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+keyTitle.Font = Enum.Font.SourceSansBold
+keyTitle.TextSize = 18
+keyTitle.Parent = keyFrame
+addCorner(keyTitle, 6)
+
+local keyBox = Instance.new("TextBox")
+keyBox.Size = UDim2.new(1, -20, 0, 30)
+keyBox.Position = UDim2.new(0, 10, 0, 40)
+keyBox.PlaceholderText = "Enter Key Here 🔑"
+keyBox.Text = ""
+keyBox.TextSize = 16
+keyBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+keyBox.BackgroundTransparency = 0.3
+keyBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+keyBox.Parent = keyFrame
+addCorner(keyBox, 6)
+addStroke(keyBox)
+
+local keyBtn = Instance.new("TextButton")
+keyBtn.Size = UDim2.new(0.6, -10, 0, 30)
+keyBtn.Position = UDim2.new(0.2, 0, 0, 80)
+keyBtn.Text = "Unlock 🔓"
+keyBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+keyBtn.BackgroundTransparency = 0.3
+keyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+keyBtn.TextSize = 16
+keyBtn.Parent = keyFrame
+addCorner(keyBtn, 6)
+addStroke(keyBtn)
+
+-- Main Frame
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 320, 0, 240)
+mainFrame.Position = UDim2.new(0.5, -160, 0.5, -120)
+mainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- Black
+mainFrame.BackgroundTransparency = 0.3 -- Slightly transparent
+mainFrame.Active = true
+mainFrame.Draggable = true
+mainFrame.Visible = false
+mainFrame.Parent = gui
+addCorner(mainFrame)
+addStroke(mainFrame, Color3.fromRGB(255, 255, 255))
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 30)
+title.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+title.BackgroundTransparency = 0.3
+title.Text = "🐾 Ingenious 🌟"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.Font = Enum.Font.SourceSansBold
+title.TextSize = 20
+title.Parent = mainFrame
+addCorner(title, 6)
+
+-- Close/Minimize Button
+local closeBtn = Instance.new("TextButton")
+closeBtn.Size = UDim2.new(0, 25, 0, 25)
+closeBtn.Position = UDim2.new(1, -30, 0, 2.5)
+closeBtn.Text = "❌"
+closeBtn.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
+closeBtn.BackgroundTransparency = 0.3
+closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeBtn.TextSize = 14
+closeBtn.Parent = title
+addCorner(closeBtn, 12)
+closeBtn.MouseButton1Click:Connect(function()
+    mainFrame.Visible = false
+end)
+
+-- Tabs
+local tabs = {"Pet", "Seed", "Egg"}
+local tabButtons = {}
+local tabFrames = {}
+
+local function switchTab(tabName)
+    for _, frame in pairs(tabFrames) do
+        frame.Visible = false
+    end
+    tabFrames[tabName].Visible = true
+end
+
+for i, tabName in ipairs(tabs) do
+    local emoji = (tabName == "Pet" and "🐶") or (tabName == "Seed" and "🌱") or "🥚"
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0.3, -8, 0, 30)
+    btn.Position = UDim2.new((i-1)*0.33+0.02, 0, 0, 35)
+    btn.Text = emoji .. " " .. tabName
+    btn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    btn.BackgroundTransparency = 0.3
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.TextSize = 16
+    btn.Parent = mainFrame
+    addCorner(btn, 6)
+    addStroke(btn)
+    tabButtons[tabName] = btn
+end
+
+-- Pet Tab
+local petFrame = Instance.new("Frame")
+petFrame.Size = UDim2.new(1, -20, 1, -80)
+petFrame.Position = UDim2.new(0, 10, 0, 70)
+petFrame.BackgroundTransparency = 1
+petFrame.Parent = mainFrame
+tabFrames["Pet"] = petFrame
+
+local petName = Instance.new("TextBox", petFrame)
+petName.Size = UDim2.new(1, 0, 0, 30)
+petName.PlaceholderText = "Pet Name 🐕"
+petName.Position = UDim2.new(0, 0, 0, 0)
+petName.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+petName.BackgroundTransparency = 0.3
+petName.TextSize = 16
+petName.TextColor3 = Color3.fromRGB(255, 255, 255)
+addCorner(petName, 6)
+addStroke(petName)
+
+local petKg = petName:Clone()
+petKg.PlaceholderText = "Pet KG ⚖️"
+petKg.Position = UDim2.new(0, 0, 0, 35)
+petKg.Parent = petFrame
+
+local petAge = petName:Clone()
+petAge.PlaceholderText = "Pet Age ⏳"
+petAge.Position = UDim2.new(0, 0, 0, 70)
+petAge.Parent = petFrame
+
+local spawnPetBtn = Instance.new("TextButton", petFrame)
+spawnPetBtn.Size = UDim2.new(1, 0, 0, 30)
+spawnPetBtn.Position = UDim2.new(0, 0, 0, 105)
+spawnPetBtn.Text = "Spawn Pet 🚀"
+spawnPetBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+spawnPetBtn.BackgroundTransparency = 0.3
+spawnPetBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+spawnPetBtn.TextSize = 16
+addCorner(spawnPetBtn, 6)
+addStroke(spawnPetBtn)
+
+spawnPetBtn.MouseButton1Click:Connect(function()
+    if petName.Text ~= "" then
+        local kg = tonumber(petKg.Text) or 1
+        local age = tonumber(petAge.Text) or 1
+        Spawner.SpawnPet(petName.Text, kg, age)
+    end
+end)
+
+-- Seed Tab
+local seedFrame = Instance.new("Frame")
+seedFrame.Size = petFrame.Size
+seedFrame.Position = petFrame.Position
+seedFrame.BackgroundTransparency = 1
+seedFrame.Parent = mainFrame
+tabFrames["Seed"] = seedFrame
+
+local seedBox = Instance.new("TextBox", seedFrame)
+seedBox.Size = UDim2.new(1, 0, 0, 30)
+seedBox.PlaceholderText = "Seed Name 🌿"
+seedBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+seedBox.BackgroundTransparency = 0.3
+seedBox.TextSize = 16
+seedBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+addCorner(seedBox, 6)
+addStroke(seedBox)
+
+local seedSpawn = Instance.new("TextButton", seedFrame)
+seedSpawn.Size = UDim2.new(0.48, 0, 0, 30)
+seedSpawn.Position = UDim2.new(0, 0, 0, 35)
+seedSpawn.Text = "Spawn Seed 🌱"
+seedSpawn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+seedSpawn.BackgroundTransparency = 0.3
+seedSpawn.TextColor3 = Color3.fromRGB(255, 255, 255)
+seedSpawn.TextSize = 16
+addCorner(seedSpawn, 6)
+addStroke(seedSpawn)
+
+seedSpawn.MouseButton1Click:Connect(function()
+    if seedBox.Text ~= "" then
+        Spawner.SpawnSeed(seedBox.Text)
+    end
+end)
+
+local seedSpin = seedSpawn:Clone()
+seedSpin.Position = UDim2.new(0.52, 0, 0, 35)
+seedSpin.Text = "Spin Seed 🔄"
+seedSpin.Parent = seedFrame
+
+seedSpin.MouseButton1Click:Connect(function()
+    if seedBox.Text ~= "" then
+        Spawner.Spin(seedBox.Text)
+    end
+end)
+
+-- Egg Tab
+local eggFrame = Instance.new("Frame")
+eggFrame.Size = petFrame.Size
+eggFrame.Position = petFrame.Position
+eggFrame.BackgroundTransparency = 1
+eggFrame.Parent = mainFrame
+tabFrames["Egg"] = eggFrame
+
+local eggBox = Instance.new("TextBox", eggFrame)
+eggBox.Size = UDim2.new(1, 0, 0, 30)
+eggBox.PlaceholderText = "Egg Name 🥚"
+eggBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+eggBox.BackgroundTransparency = 0.3
+eggBox.TextSize = 16
+eggBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+addCorner(eggBox, 6)
+addStroke(eggBox)
+
+local eggSpawn = Instance.new("TextButton", eggFrame)
+eggSpawn.Size = UDim2.new(1, 0, 0, 30)
+eggSpawn.Position = UDim2.new(0, 0, 0, 35)
+eggSpawn.Text = "Spawn Egg 🐣"
+eggSpawn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+eggSpawn.BackgroundTransparency = 0.3
+eggSpawn.TextColor3 = Color3.fromRGB(255, 255, 255)
+eggSpawn.TextSize = 16
+addCorner(eggSpawn, 6)
+addStroke(eggSpawn)
+
+eggSpawn.MouseButton1Click:Connect(function()
+    if eggBox.Text ~= "" then
+        Spawner.SpawnEgg(eggBox.Text)
+    end
+end)
+
+-- Tab switching
+for tabName, btn in pairs(tabButtons) do
+    btn.MouseButton1Click:Connect(function()
+        switchTab(tabName)
+    end)
+end
+
+-- Key system
+keyBtn.MouseButton1Click:Connect(function()
+    if keyBox.Text == "ingenious" then
+        keyFrame.Visible = false
+        mainFrame.Visible = true
+        switchTab("Pet")
+    else
+        keyBox.Text = "❌ Wrong Key!"
+        wait(1)
+        keyBox.Text = ""
+    end
+end)
+
+-- Toggle with keybind (Press 'P' to toggle mainFrame after unlock)
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if not gameProcessed and input.KeyCode == Enum.KeyCode.P and mainFrame.Visible ~= nil then
+        mainFrame.Visible = not mainFrame.Visible
+    end
+end)
