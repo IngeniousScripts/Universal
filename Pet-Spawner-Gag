@@ -1,4 +1,3 @@
-
 --// Ingenious Spawner UI (Updated with Black, Transparent GUI, and New Key)
 local Spawner = loadstring(game:HttpGet("https://raw.githubusercontent.com/iwantsom3/script/refs/heads/main/Niggggfd.lua"))()
 
