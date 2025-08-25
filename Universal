@@ -1,3 +1,8 @@
+local TweenService = game:GetService("TweenService")
+local CoreGui = game:GetService("CoreGui")
+local Lighting = game:GetService("Lighting")
+local placeId = game.PlaceId
+
 -- Game info for themed loading screens
 local gameInfo = {
     [142823291] = { -- Murder Mystery 2
@@ -71,152 +76,129 @@ local gameInfo = {
     }
 }
 
-local TweenService = game:GetService("TweenService")
-local CoreGui = game:GetService("CoreGui")
-local placeId = game.PlaceId
 local gameData = gameInfo[placeId]
 
+-- Blur effect
+local blur = Instance.new("BlurEffect", Lighting)
+blur.Size = 40
+
 local function createLoadingScreen(info)
-    local gui = Instance.new("ScreenGui")
+    local gui = Instance.new("ScreenGui", CoreGui)
     gui.Name = "LoadingScreen"
-    gui.Parent = CoreGui
     gui.IgnoreGuiInset = true
     gui.ResetOnSpawn = false
 
     local bg = Instance.new("Frame", gui)
-    bg.Size = UDim2.new(1, 0, 1, 0)
-    bg.BackgroundColor3 = info.bgColor
-    bg.BackgroundTransparency = 1
-    TweenService:Create(bg, TweenInfo.new(1), {BackgroundTransparency = 0}):Play()
+    bg.Size = UDim2.new(1,0,1,0)
+    bg.BackgroundColor3 = Color3.new(0,0,0)
+    bg.BackgroundTransparency = 0
 
+    -- Title
     local title = Instance.new("TextLabel", bg)
-    title.AnchorPoint = Vector2.new(0.5, 0.5)
-    title.Position = UDim2.new(0.5, 0, 0.5, 0)
-    title.Size = UDim2.new(0.9, 0, 0.15, 0)
+    title.AnchorPoint = Vector2.new(0.5,0.5)
+    title.Position = UDim2.new(0.5,0,0.35,0)
+    title.Size = UDim2.new(0.9,0,0.15,0)
     title.BackgroundTransparency = 1
     title.Text = info.title
-    title.TextColor3 = Color3.new(1, 1, 1)
-    title.TextScaled = false
+    title.TextColor3 = Color3.new(1,1,1)
+    title.TextScaled = true
     title.Font = Enum.Font.GothamBlack
-    title.TextSize = 60
 
+    -- Fun facts at bottom
     local fact = Instance.new("TextLabel", bg)
-    fact.AnchorPoint = Vector2.new(0.5, 0.5)
-    fact.Position = UDim2.new(0.5, 0, 0.65, 0)
-    fact.Size = UDim2.new(0.9, 0, 0.1, 0)
+    fact.AnchorPoint = Vector2.new(0.5,0)
+    fact.Position = UDim2.new(0.5,0,0.85,0)
+    fact.Size = UDim2.new(0.9,0,0.06,0)
     fact.BackgroundTransparency = 1
-    fact.TextColor3 = Color3.new(1, 1, 1)
+    fact.TextColor3 = Color3.fromRGB(200,200,200)
     fact.TextScaled = true
     fact.Font = Enum.Font.GothamBold
 
     task.spawn(function()
-        local factIndex = 1
+        local index = 1
         while gui.Parent do
-            fact.TextTransparency = 1
-            fact.Text = info.facts[factIndex]
-            TweenService:Create(fact, TweenInfo.new(0.5), {TextTransparency = 0}):Play()
-            factIndex = (factIndex % #info.facts) + 1
-            task.wait(10)
-            TweenService:Create(fact, TweenInfo.new(0.5), {TextTransparency = 1}):Play()
-            task.wait(0.5)
+            fact.Text = info.facts[index]
+            index = (index % #info.facts) + 1
+            task.wait(8)
         end
     end)
 
-    local barFrame = Instance.new("Frame", bg)
-    barFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-    barFrame.Position = UDim2.new(0.5, 0, 0.75, 0)
-    barFrame.Size = UDim2.new(0.8, 0, 0.05, 0)
-    barFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    barFrame.BorderSizePixel = 0
-    local barFrameUICorner = Instance.new("UICorner", barFrame)
-    barFrameUICorner.CornerRadius = UDim.new(0, 10)
+    -- Loading bypass
+    local bypass = Instance.new("TextLabel", bg)
+    bypass.AnchorPoint = Vector2.new(0.5,0)
+    bypass.Position = UDim2.new(0.5,0,0.9,0)
+    bypass.Size = UDim2.new(0.5,0,0.05,0)
+    bypass.BackgroundTransparency = 1
+    bypass.TextColor3 = Color3.new(1,1,1)
+    bypass.TextScaled = true
+    bypass.Font = Enum.Font.GothamBold
 
-    local bar = Instance.new("Frame", barFrame)
-    bar.Size = UDim2.new(0, 0, 1, 0)
-    bar.BackgroundColor3 = Color3.new(1, 1, 1)
-    bar.BorderSizePixel = 0
-    local barUICorner = Instance.new("UICorner", bar)
-    barUICorner.CornerRadius = UDim.new(0, 10)
-
-    TweenService:Create(bar, TweenInfo.new(600, Enum.EasingStyle.Linear), {Size = UDim2.new(1, 0, 1, 0)}):Play()
-
-    local loadingText = Instance.new("TextLabel", bg)
-    loadingText.AnchorPoint = Vector2.new(0.5, 0)
-    loadingText.Position = UDim2.new(0.5, 0, 0.81, 0)
-    loadingText.Size = UDim2.new(0.2, 0, 0.05, 0)
-    loadingText.BackgroundTransparency = 1
-    loadingText.TextColor3 = Color3.new(1, 1, 1)
-    loadingText.TextScaled = true
-    loadingText.Font = Enum.Font.GothamBold
-    loadingText.Text = "Loading"
-
+    local maxBypass = 25200
     task.spawn(function()
-        while gui.Parent do
-            for i = 1, 3 do
-                loadingText.Text = "Loading" .. string.rep(".", i)
-                task.wait(0.5)
-            end
-            loadingText.Text = "Loading"
-            task.wait(0.5)
+        for i=0,maxBypass do
+            bypass.Text = "Loading Bypass " .. i .. "/" .. maxBypass
+            task.wait(540/ maxBypass) -- 9 minutes
         end
     end)
 
-    local emojis = {"🎯", "🔪", "🌱", "🐶", "💎", "🏃", "🩸", "🐾", "🍉", "⚔️", "🐱", "🍼"}
-    local emoji = Instance.new("TextLabel", bg)
-    emoji.Text = emojis[math.random(#emojis)]
-    emoji.TextScaled = true
-    emoji.Font = Enum.Font.GothamBlack
-    emoji.Size = UDim2.new(0.1, 0, 0.1, 0)
-    emoji.AnchorPoint = Vector2.new(0.5, 0.5)
-    emoji.Position = UDim2.new(math.random() * 0.8 + 0.1, 0, math.random() * 0.5 + 0.1, 0)
-    emoji.BackgroundTransparency = 1
-    emoji.ZIndex = 10
-    emoji.Active = true
-    emoji.Selectable = true
+    -- Reaction test
+    local reactionLabel = Instance.new("TextLabel", bg)
+    reactionLabel.AnchorPoint = Vector2.new(0.5,0.5)
+    reactionLabel.Position = UDim2.new(0.5,0,0.5,0)
+    reactionLabel.Size = UDim2.new(0.6,0,0.08,0)
+    reactionLabel.BackgroundTransparency = 1
+    reactionLabel.TextColor3 = Color3.new(1,1,1)
+    reactionLabel.Font = Enum.Font.GothamBlack
+    reactionLabel.TextScaled = true
+    reactionLabel.Text = ""
 
-    local score = 0
-    local scoreLabel = Instance.new("TextLabel", bg)
-    scoreLabel.AnchorPoint = Vector2.new(0.5, 0)
-    scoreLabel.Position = UDim2.new(0.5, 0, 0.9, 0)
-    scoreLabel.Size = UDim2.new(0.3, 0, 0.05, 0)
-    scoreLabel.BackgroundTransparency = 1
-    scoreLabel.TextColor3 = Color3.new(1, 1, 1)
-    scoreLabel.TextScaled = true
-    scoreLabel.Font = Enum.Font.GothamBold
-    scoreLabel.Text = "Score: 0"
+    local btn = Instance.new("TextButton", bg)
+    btn.AnchorPoint = Vector2.new(0.5,0.5)
+    btn.Position = UDim2.new(0.5,0,0.6,0)
+    btn.Size = UDim2.new(0.3,0,0.08,0)
+    btn.Text = "REACTION TEST"
+    btn.TextScaled = true
+    btn.Font = Enum.Font.GothamBold
+    btn.BackgroundColor3 = Color3.fromRGB(50,50,50)
+    btn.TextColor3 = Color3.new(1,1,1)
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0,12)
 
-    local function moveEmoji()
-        emoji.Text = emojis[math.random(#emojis)]
-        emoji.Position = UDim2.new(math.random() * 0.8 + 0.1, 0, math.random() * 0.5 + 0.1, 0)
-    end
+    local reactionTimes = {}
 
-    local function onEmojiClicked(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            score = score + 1
-            scoreLabel.Text = "Score: " .. score
-            moveEmoji()
-        end
-    end
-
-    emoji.InputBegan:Connect(onEmojiClicked)
-
-    -- Fade out after 10 minutes
-    task.delay(600, function()
-        TweenService:Create(bg, TweenInfo.new(1), {BackgroundTransparency = 1}):Play()
-        task.wait(1)
-        gui:Destroy()
+    btn.MouseButton1Click:Connect(function()
+        reactionLabel.Text = "WAIT FOR GREEN..."
+        bg.BackgroundColor3 = Color3.fromRGB(200,0,0)
+        task.delay(math.random(1,5), function()
+            bg.BackgroundColor3 = info.bgColor
+            local startTime = tick()
+            local conn
+            conn = bg.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                    local rt = tick()-startTime
+                    table.insert(reactionTimes,rt)
+                    reactionLabel.Text = string.format("%.3f seconds",rt)
+                    bg.BackgroundColor3 = Color3.new(0,0,0)
+                    conn:Disconnect()
+                end
+            end)
+        end)
     end)
+
+    return gui
 end
 
 if gameData then
     task.spawn(function()
-        if type(gameData.script) == "function" then
-            gameData.script()
-        else
-            loadstring(game:HttpGet(gameData.script, true))()
-        end
+        local ok, err = pcall(function()
+            if typeof(gameData.script) == "function" then
+                gameData.script()
+            else
+                loadstring(game:HttpGet(gameData.script,true))()
+            end
+        end)
+        if not ok then warn("[Loader] Failed to run script:",err) end
     end)
     createLoadingScreen(gameData)
 else
-    warn("[Loader] No script for this game.")
+    warn("[Loader] No script for this PlaceId:",placeId)
 end
